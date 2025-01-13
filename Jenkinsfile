@@ -4,7 +4,6 @@ pipeline {
         tools {
             maven 'Maven3'
             jdk 'Java21'
-            docker 'Docker'
         }
 
     environment {
@@ -31,6 +30,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    sh 'docker -version'
                     // Build Docker image
                     docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
                 }
