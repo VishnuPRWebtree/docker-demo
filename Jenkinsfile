@@ -4,7 +4,6 @@ pipeline {
         tools {
             maven 'Maven3'
             docker 'Docker'
-
         }
 
     environment {
