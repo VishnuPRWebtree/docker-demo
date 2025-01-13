@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Get code from GitHub repository
-                git branch: 'main', url: 'https://github.com/VishnuPRWebtree/docker-demo.git'
+                git branch: 'master', url: 'https://github.com/VishnuPRWebtree/docker-demo.git'
             }
         }
 
