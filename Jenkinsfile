@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+        tools {
+            maven 'Maven3'
+        }
+
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
         DOCKER_IMAGE_NAME = 'vishnuprv/docker-demo'
