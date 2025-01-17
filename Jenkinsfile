@@ -1,28 +1,47 @@
 pipeline {
     agent any
 
-        tools {
-            maven 'Maven3'
-        }
+    tools {
+        maven 'Maven3'
+    }
+
+    options {
+        timeout(time: 1, unit: 'HOURS')
+        retry(3)
+    }
+
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'Branch to build')
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Docker image tag')
+    }
 
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
         DOCKER_IMAGE_NAME = 'vishnuprv/docker-demo'
-        DOCKER_IMAGE_TAG = 'latest'
+        DOCKER_IMAGE_TAG = params.IMAGE_TAG
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Get code from GitHub repository
-                git branch: 'master', url: 'https://github.com/VishnuPRWebtree/docker-demo.git'
+                checkout scm
             }
         }
 
         stage('Build Maven Project') {
             steps {
-                // Build Spring Boot application
                 sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
             }
         }
 
@@ -30,8 +49,7 @@ pipeline {
             steps {
                 script {
                     sh 'docker --version'
-                    // Build Docker image
-                    docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
+                    sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
                 }
             }
         }
@@ -50,11 +68,16 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh """
-                    docker stop \$(docker ps -q --filter ancestor=${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}) || true
-                    docker rm \$(docker ps -aq --filter ancestor=${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}) || true
-                    docker run -d -p 8080:8080 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
-                """
+                script {
+                    sh '''
+                        CONTAINER_IDS=$(docker ps -aq --filter ancestor=${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG})
+                        if [ ! -z "$CONTAINER_IDS" ]; then
+                            docker stop $CONTAINER_IDS
+                            docker rm $CONTAINER_IDS
+                        fi
+                        docker run -d -p 8081:8081 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                    '''
+                }
             }
         }
     }
@@ -62,6 +85,13 @@ pipeline {
     post {
         always {
             sh 'docker logout'
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed! Check logs for details.'
         }
     }
 }
