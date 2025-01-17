@@ -5,7 +5,7 @@ pipeline {
         maven 'Maven3'
         jdk 'Java21'
     }
-https://localhost:8081/
+
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
         DOCKER_IMAGE_NAME = 'vishnuprv/docker-demo'
