@@ -21,9 +21,10 @@ pipeline {
             }
         }
 
+
         stage('Build Maven Project') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn clean install package -DskipTests'
             }
         }
 
@@ -35,7 +36,6 @@ pipeline {
                 '''
             }
         }
-
         stage('Login to DockerHub') {
             steps {
                 sh 'echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin'
@@ -54,7 +54,7 @@ pipeline {
                     CONTAINER_NAME=docker-demo
                     docker stop ${CONTAINER_NAME} || true
                     docker rm ${CONTAINER_NAME} || true
-                    docker run -d --name ${CONTAINER_NAME} -p 8081:8080 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                    docker run -d --name ${CONTAINER_NAME} -p 8081:8081 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
                 '''
             }
         }
@@ -65,4 +65,5 @@ pipeline {
             sh 'docker logout'
         }
     }
+
 }
