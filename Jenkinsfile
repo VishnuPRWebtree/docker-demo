@@ -3,28 +3,21 @@ pipeline {
 
     tools {
         maven 'Maven3'
+        jdk 'Java21'
     }
-
-    options {
-        timeout(time: 1, unit: 'HOURS')
-        retry(3)
-    }
-
-    parameters {
-        string(name: 'BRANCH_NAME', defaultValue: 'master', description: 'Branch to build')
-        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Docker image tag')
-    }
-
+https://localhost:8081/
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
         DOCKER_IMAGE_NAME = 'vishnuprv/docker-demo'
-        DOCKER_IMAGE_TAG = params.IMAGE_TAG
+        DOCKER_IMAGE_TAG = 'latest'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                // Simple checkout for public repository
+                git branch: 'master',
+                    url: 'https://github.com/VishnuPRWebtree/docker-demo.git'
             }
         }
 
@@ -34,23 +27,12 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh 'docker --version'
-                    sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
-                }
+                sh '''
+                    docker --version
+                    docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
+                '''
             }
         }
 
@@ -68,16 +50,12 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                script {
-                    sh '''
-                        CONTAINER_IDS=$(docker ps -aq --filter ancestor=${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG})
-                        if [ ! -z "$CONTAINER_IDS" ]; then
-                            docker stop $CONTAINER_IDS
-                            docker rm $CONTAINER_IDS
-                        fi
-                        docker run -d -p 8081:8081 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
-                    '''
-                }
+                sh '''
+                    CONTAINER_NAME=docker-demo
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                    docker run -d --name ${CONTAINER_NAME} -p 8081:8080 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                '''
             }
         }
     }
@@ -85,13 +63,6 @@ pipeline {
     post {
         always {
             sh 'docker logout'
-            cleanWs()
-        }
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed! Check logs for details.'
         }
     }
 }
