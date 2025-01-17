@@ -5,9 +5,11 @@ pipeline {
         maven 'Maven3'
         jdk 'Java21'
     }
-
+https://localhost:8081/
     environment {
-        JAR_FILE = 'target/demo-0.0.1-SNAPSHOT.jar' // Path to the JAR file
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
+        DOCKER_IMAGE_NAME = 'vishnuprv/docker-demo'
+        DOCKER_IMAGE_TAG = 'latest'
     }
 
     stages {
@@ -19,30 +21,46 @@ pipeline {
 
         stage('Build Maven Project') {
             steps {
-                script {
-                    echo 'Building the Maven project...'
-                    sh 'mvn clean install package -DskipTests'
-                }
+                sh 'mvn clean install package -DskipTests'
             }
         }
 
-        stage('Run JAR File') {
+        stage('Build Docker Image') {
             steps {
-                script {
-                    echo 'Running the JAR file...'
-                    sh """
-                        java -jar ${JAR_FILE}
-                    """
-                }
+                sh '''
+                    docker --version
+                    docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
+                '''
+            }
+        }
+
+        stage('Login to DockerHub') {
+            steps {
+                sh 'echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                sh "docker push ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    CONTAINER_NAME=docker-demo
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                    docker run -d --name ${CONTAINER_NAME} -p 8081:8080 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                '''
             }
         }
     }
 
     post {
         always {
-            script {
-                echo 'Pipeline execution completed.'
-            }
+            sh 'docker logout'
         }
     }
 }
