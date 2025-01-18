@@ -28,10 +28,14 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                docker build --build-arg BUILD_NUMBER=${BUILD_NUMBER} \
-                -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} .
-                '''
+                script {
+                    def IMAGE_TAG = BUILD_NUMBER ?: "latest" // Default tag if BUILD_NUMBER is missing
+                    sh """
+                       docker --version
+                       docker build --build-arg BUILD_NUMBER=${IMAGE_TAG} \
+                       -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} .
+                     """
+                }
             }
         }
 
