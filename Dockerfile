@@ -1,7 +1,7 @@
 FROM eclipse-temurin:21-jre-jammy
 
 LABEL maintainer="docker-demo-app"
-LABEL version="1.0"
+LABEL version="${BUILD_NUMBER}"
 LABEL description="Spring Boot Docker Demo Application"
 
 WORKDIR /app

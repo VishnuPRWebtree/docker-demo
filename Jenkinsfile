@@ -9,18 +9,16 @@ pipeline {
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
         DOCKER_IMAGE_NAME = 'vishnuprv/docker-demo'
-        DOCKER_IMAGE_TAG = 'latest'
+        DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"  // Using Jenkins BUILD_NUMBER
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Simple checkout for public repository
                 git branch: 'master',
                     url: 'https://github.com/VishnuPRWebtree/docker-demo.git'
             }
         }
-
 
         stage('Build Maven Project') {
             steps {
@@ -32,10 +30,14 @@ pipeline {
             steps {
                 sh '''
                     docker --version
-                    docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
+                    docker build \
+                        --build-arg BUILD_NUMBER=${BUILD_NUMBER} \
+                        -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} \
+                        -t ${DOCKER_IMAGE_NAME}:latest .
                 '''
             }
         }
+
         stage('Login to DockerHub') {
             steps {
                 sh 'echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin'
@@ -44,7 +46,10 @@ pipeline {
 
         stage('Push to DockerHub') {
             steps {
-                sh "docker push ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+                sh '''
+                    docker push ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                    docker push ${DOCKER_IMAGE_NAME}:latest
+                '''
             }
         }
 
