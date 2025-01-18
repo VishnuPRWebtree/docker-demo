@@ -29,11 +29,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    docker --version
-                    docker build \
-                        --build-arg BUILD_NUMBER=${BUILD_NUMBER} \
-                        -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} \
-                        -t ${DOCKER_IMAGE_NAME}:latest .
+                docker build --build-arg BUILD_NUMBER=${BUILD_NUMBER} \
+                -t ${DOCKER_IMAGE_NAME}:${IMAGE_TAG} .
                 '''
             }
         }
@@ -48,7 +45,6 @@ pipeline {
             steps {
                 sh '''
                     docker push ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
-                    docker push ${DOCKER_IMAGE_NAME}:latest
                 '''
             }
         }
