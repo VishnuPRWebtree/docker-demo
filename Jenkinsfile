@@ -30,8 +30,12 @@ pipeline {
             steps {
                 script {
                     sh '''
+                        echo "Stopping containers using the old Docker images..."
+                        docker ps -a --filter "ancestor=${DOCKER_IMAGE_NAME}" -q | xargs -r docker stop || true
+                        docker ps -a --filter "ancestor=${DOCKER_IMAGE_NAME}" -q | xargs -r docker rm -f || true
+
                         echo "Removing old Docker images..."
-                        docker images -q ${DOCKER_IMAGE_NAME} | xargs -r docker rmi -f
+                        docker images -q ${DOCKER_IMAGE_NAME} | xargs -r docker rmi -f || true
                     '''
                 }
             }
