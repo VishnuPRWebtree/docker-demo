@@ -58,6 +58,7 @@ pipeline {
                 sh '''
                     export BUILD_NUMBER=${BUILD_NUMBER}
                     docker-compose down || true
+                    docker rm -f docker-demo || true
                     docker-compose up -d
                 '''
             }
