@@ -6,11 +6,12 @@ services:
     container_name: ${CONTAINER_NAME}
     ports:
       - "${PORT}:${PORT}"
-    environment:
-      - PORT=${PORT}
-      - SPRING_APP_NAME=${SPRING_APP_NAME}
-      - APP_DEMO=${APP_DEMO}
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+    env_file:
+      - ./.env
+#    environment:
+#      - PORT=${PORT}
+#      - SPRING_APP_NAME=${SPRING_APP_NAME}
+#      - APP_DEMO=${APP_DEMO}
     restart: unless-stopped
     networks:
       - demo-network
