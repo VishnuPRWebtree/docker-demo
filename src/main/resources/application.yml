@@ -1,12 +1,11 @@
 server:
-  port: 8081
+  port: ${PORT:8081}
 
 spring:
   application:
-    name: demo
-
+    name: ${SPRING_APP_NAME:demo}
 
 application:
-  demo: DOCKER-DEMO
+  demo: ${APP_DEMO:DOCKER-DEMO}
 
 

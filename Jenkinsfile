@@ -56,13 +56,12 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    CONTAINER_NAME=docker-demo
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
-                    docker run -d --name ${CONTAINER_NAME} -p 8081:8081 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+                    export BUILD_NUMBER=${BUILD_NUMBER}
+                    docker compose down || true
+                    docker compose up -d
                 '''
-            }
-        }
+    }
+}
     }
 
     post {

@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  docker-demo:
+    image: ${DOCKER_IMAGE_NAME}:${BUILD_NUMBER:-latest}
+    container_name: ${CONTAINER_NAME}
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - PORT=${PORT}
+      - SPRING_APP_NAME=${SPRING_APP_NAME}
+      - APP_DEMO=${APP_DEMO}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+    restart: unless-stopped
+    networks:
+      - demo-network
+
+networks:
+  demo-network:
+    driver: bridge
