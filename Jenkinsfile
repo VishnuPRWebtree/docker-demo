@@ -26,6 +26,17 @@ pipeline {
             }
         }
 
+        stage('Clean Up Old Docker Images') {
+            steps {
+                script {
+                    sh '''
+                        echo "Removing old Docker images..."
+                        docker images -q ${DOCKER_IMAGE_NAME} | xargs -r docker rmi -f
+                    '''
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
