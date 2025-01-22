@@ -4,6 +4,17 @@ server:
 spring:
   application:
     name: ${SPRING_APP_NAME:demo}
+  datasource:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
 
 application:
   demo: ${APP_DEMO:DOCKER-DEMO}
