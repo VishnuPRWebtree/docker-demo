@@ -4,19 +4,31 @@ server:
 spring:
   application:
     name: ${SPRING_APP_NAME:demo}
+
   datasource:
+    driver-class-name: org.postgresql.Driver
     url: ${POSTGRES_URL}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  cloud:
+    config:
+      enabled: false
+
+  config:
+    import: optional:configserver
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8190/eureka/
 
 application:
   demo: ${APP_DEMO:DOCKER-DEMO}
+
 
 
