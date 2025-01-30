@@ -25,7 +25,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8190/eureka/
+      defaultZone: http://discovery-service:8190/eureka/
 
 application:
   demo: ${APP_DEMO:DOCKER-DEMO}
